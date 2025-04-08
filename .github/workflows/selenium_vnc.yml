@@ -84,10 +84,13 @@ jobs:
           echo "🖥️ Running SeleniumBase test..."
           DISPLAY=:1 python3 ./test_selenium.py
 
-      - name: Keep job alive
+      - name: Keep job alive (waiting for continue.txt)
         run: |
           echo "🔧 Session ready. Connect your VNC client to the ngrok URL above."
-          tail -f /dev/null
+          echo "Create a file named 'continue.txt' in the repo to proceed."
+          while [ ! -f continue.txt ]; do
+            sleep 10
+          done
 
       - name: Save chrome_profile cache
         uses: actions/cache@v3
