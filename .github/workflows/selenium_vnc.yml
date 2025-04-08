@@ -48,7 +48,7 @@ jobs:
 
       - name: Authenticate and start ngrok
         run: |
-          ngrok config add-authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
+          ngrok config add-authtoken 1QzNVolV9VvSiUE7AlMnKlFkg1J_3VBimpCJrC4JHXLNwVvwd
           ngrok tcp 5900 --log=stdout > ngrok.log &
           sleep 3
 
