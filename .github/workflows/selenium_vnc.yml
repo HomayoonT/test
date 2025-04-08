@@ -15,7 +15,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y xvfb x11vnc fluxbox wget curl jq default-jre unzip python3-pip
+          sudo apt install -y xvfb x11vnc lxqt wget curl jq default-jre unzip python3-pip
 
           # Install SeleniumBase
           pip3 install seleniumbase
@@ -23,20 +23,23 @@ jobs:
           # Download Selenium Standalone Server
           wget https://selenium-release.storage.googleapis.com/3.141/selenium-server-standalone-3.141.59.jar
 
-      - name: Set up Xvfb, Fluxbox, VNC, and Selenium
+      - name: Set up Xvfb, LXQt, VNC, and Selenium
         run: |
           Xvfb :1 -screen 0 1024x768x16 &
           export DISPLAY=:1
           echo "export DISPLAY=:1" >> $GITHUB_ENV
           sleep 2
 
-          fluxbox &
-          sleep 1
+          # Start LXQt (desktop environment)
+          startlxqt &
+          sleep 5
 
+          # Start x11vnc for VNC access
           x11vnc -storepasswd secret /tmp/passwd
           x11vnc -forever -rfbauth /tmp/passwd -display :1 -shared -bg
           sleep 1
 
+          # Start Selenium Standalone Server
           java -jar selenium-server-standalone-3.141.59.jar -port 4444 &
           sleep 3
 
