@@ -9,6 +9,9 @@ jobs:
   selenium_vnc:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
       - name: Install dependencies
         run: |
           sudo apt update
@@ -45,7 +48,7 @@ jobs:
 
       - name: Authenticate and start ngrok
         run: |
-          ngrok config add-authtoken 1QzNVolV9VvSiUE7AlMnKlFkg1J_3VBimpCJrC4JHXLNwVvwd
+          ngrok config add-authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
           ngrok tcp 5900 --log=stdout > ngrok.log &
           sleep 3
 
@@ -71,7 +74,7 @@ jobs:
       - name: Run test_selenium.py script
         run: |
           echo "🖥️ Running SeleniumBase test..."
-          python3 test_selenium.py
+          python3 ./test_selenium.py
 
       - name: Keep job alive
         run: |
