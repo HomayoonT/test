@@ -89,8 +89,8 @@ jobs:
           echo "🔧 Session ready. Connect your VNC client to the ngrok URL above."
           tail -f /dev/null
 
-      - name: Upload chrome_profile artifact
-        uses: actions/upload-artifact@v3
+      - name: Save chrome_profile cache
+        uses: actions/cache@v3
         with:
-          name: chrome_profile
           path: chrome_profile
+          key: chrome-profile-${{ github.run_id }}
