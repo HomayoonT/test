@@ -1,4 +1,4 @@
-name: Selenium VNC Debug with Chrome
+name: Selenium VNC Debug with SeleniumBase (ngrok v3)
 
 on:
   push:
@@ -6,34 +6,23 @@ on:
       - main
 
 jobs:
-  selenium_vnc_chrome:
+  selenium_vnc:
     runs-on: ubuntu-latest
     steps:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y xvfb x11vnc fluxbox wget curl jq default-jre unzip gnupg2
+          sudo apt install -y xvfb x11vnc fluxbox wget curl jq default-jre unzip python3-pip
 
-          # Install Google Chrome
-          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
-          sudo apt update
-          sudo apt install -y google-chrome-stable
-
-          # Install ChromeDriver (auto-matching version)
-          CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+')
-          CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
-          wget -O chromedriver.zip "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip"
-          unzip chromedriver.zip
-          sudo mv chromedriver /usr/local/bin/
-          chmod +x /usr/local/bin/chromedriver
+          # Install SeleniumBase
+          pip3 install seleniumbase
 
           # Download Selenium Standalone Server
           wget https://selenium-release.storage.googleapis.com/3.141/selenium-server-standalone-3.141.59.jar
 
-      - name: Set up virtual desktop and VNC
+      - name: Set up Xvfb, Fluxbox, VNC, and Selenium
         run: |
-          Xvfb :1 -screen 0 1280x800x16 &
+          Xvfb :1 -screen 0 1024x768x16 &
           export DISPLAY=:1
           echo "export DISPLAY=:1" >> $GITHUB_ENV
           sleep 2
@@ -48,17 +37,14 @@ jobs:
           java -jar selenium-server-standalone-3.141.59.jar -port 4444 &
           sleep 3
 
-      - name: Launch Chrome in GUI
-        run: |
-          export DISPLAY=:1
-          google-chrome-stable --no-sandbox --disable-dev-shm-usage --start-maximized &
-
-      - name: Install and start ngrok (v3)
+      - name: Install latest ngrok (v3)
         run: |
           curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
           echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
           sudo apt update && sudo apt install -y ngrok
 
+      - name: Authenticate and start ngrok
+        run: |
           ngrok config add-authtoken 1QzNVolV9VvSiUE7AlMnKlFkg1J_3VBimpCJrC4JHXLNwVvwd
           ngrok tcp 5900 --log=stdout > ngrok.log &
           sleep 3
@@ -82,7 +68,12 @@ jobs:
             cat ngrok.log
           fi
 
-      - name: Keep session alive
+      - name: Run test_selenium.py script
         run: |
-          echo "🔧 Session ready. Use VNC to view the Chrome browser!"
+          echo "🖥️ Running SeleniumBase test..."
+          python3 test_selenium.py
+
+      - name: Keep job alive
+        run: |
+          echo "🔧 Session ready. Connect your VNC client to the ngrok URL above."
           tail -f /dev/null

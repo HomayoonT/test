@@ -1,15 +1,7 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-import time
+from seleniumbase import Driver
 
-# Connect to Selenium WebDriver server exposed via ngrok
-driver = webdriver.Remote(
-    command_executor='http://localhost:4444/wd/hub',
-    desired_capabilities={'browserName': 'chrome'}
-)
-
-# Open a website and interact with it
-driver.get("http://google.com")
-
-# Keep the browser alive
-time.sleep(10000)
+driver = Driver(uc=True)
+url = "https://www.browserscan.net/bot-detection"
+driver.uc_open(url)
+driver.sleep(10000)
+driver.quit()
