@@ -1,6 +1,6 @@
-name: Selenium VNC Test
+name: Selenium VNC Debug
 
-on: 
+on:
   push:
     branches:
       - main
@@ -9,50 +9,43 @@ jobs:
   selenium_vnc:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout the repository (if you have any code)
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      # Step 2: Set up the environment
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y xfce4 xfce4-goodies x11vnc fluxbox curl jq
-          curl -O https://github.com/SeleniumHQ/selenium/releases/download/selenium-3.141.59/selenium-server-standalone-3.141.59.jar
-          
-      # Step 3: Start VNC server and Selenium
-      - name: Start VNC and Selenium server
+          sudo apt install -y xvfb x11vnc fluxbox xfce4 wget curl jq default-jre
+
+          # Download Selenium JAR (fixed link)
+          wget https://selenium-release.storage.googleapis.com/3.141/selenium-server-standalone-3.141.59.jar
+
+      - name: Set up X, VNC, and Selenium
         run: |
-          # Set up VNC password and start the server
-          x11vnc -storepasswd secret /tmp/passwd
-          x11vnc -forever -usepw -create -display :1 &
-          
-          # Start the X server (the graphical environment)
+          # Start virtual framebuffer (fake display)
+          Xvfb :1 -screen 0 1024x768x16 &
           export DISPLAY=:1
+
+          # Start lightweight window manager
           fluxbox &
-          
-          # Start the Selenium server in headless mode (it runs indefinitely)
+
+          # Set up VNC password
+          x11vnc -storepasswd secret /tmp/passwd
+
+          # Start VNC server explicitly using password file
+          x11vnc -forever -rfbauth /tmp/passwd -display :1 -shared -nopw -bg
+
+          # Start Selenium server
           java -jar selenium-server-standalone-3.141.59.jar -port 4444 &
-          
-          # Run a simple infinite loop (this keeps the job alive for testing)
+
+          # Keep the job alive for debugging
           while true; do sleep 1000; done
 
-      # Step 4: Set up ngrok to expose the VNC server
       - name: Set up ngrok for VNC
         run: |
-          curl -s https://ngrok.com/download | tar xz
+          wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
+          unzip ngrok-stable-linux-amd64.zip
           ./ngrok authtoken 1QzNVolV9VvSiUE7AlMnKlFkg1J_3VBimpCJrC4JHXLNwVvwd
-          ./ngrok tcp 5900 &
-          
-      # Step 5: Output ngrok URL for VNC connection
+          ./ngrok tcp 5900 > /dev/null &
+
       - name: Get ngrok URL
         run: |
-          ngrok_url=$(curl -s localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')
-          echo "VNC is accessible at: $ngrok_url"
-          echo "VNC_URL=$ngrok_url" >> $GITHUB_ENV
-          
-      # Step 6: Display ngrok URL to allow VNC connection
-      - name: Display ngrok URL for VNC
-        run: |
-          echo "Connect to the VNC session using the following URL:"
-          echo "${{ env.VNC_URL }}"
+          sleep 5
+          curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url'
