@@ -1,4 +1,4 @@
-name: Selenium VNC Debug
+name: Selenium VNC Debug (ngrok v3)
 
 on:
   push:
@@ -19,45 +19,38 @@ jobs:
 
       - name: Set up Xvfb, Fluxbox, VNC, and Selenium
         run: |
-          # Start virtual display
           Xvfb :1 -screen 0 1024x768x16 &
           export DISPLAY=:1
           echo "export DISPLAY=:1" >> $GITHUB_ENV
           sleep 2
 
-          # Start window manager
           fluxbox &
           sleep 1
 
-          # Set up VNC password
           x11vnc -storepasswd secret /tmp/passwd
-
-          # Start VNC server
           x11vnc -forever -rfbauth /tmp/passwd -display :1 -shared -bg
           sleep 1
 
-          # Start Selenium server
           java -jar selenium-server-standalone-3.141.59.jar -port 4444 &
           sleep 3
 
-      - name: Set up and start ngrok
+      - name: Install latest ngrok (v3)
         run: |
-          # Download and unzip ngrok
-          wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
-          unzip ngrok-stable-linux-amd64.zip
+          curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
+          echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
+          sudo apt update && sudo apt install -y ngrok
 
-          # Add ngrok auth token (REPLACE with your actual token)
-          ./ngrok authtoken 1QzNVolV9VvSiUE7AlMnKlFkg1J_3VBimpCJrC4JHXLNwVvwd
-
-          # Start ngrok in background and log output
-          ./ngrok tcp 5900 --log=stdout > ngrok.log &
+      - name: Authenticate and start ngrok
+        run: |
+          ngrok config add-authtoken 1QzNVolV9VvSiUE7AlMnKlFkg1J_3VBimpCJrC4JHXLNwVvwd
+          ngrok tcp 5900 --log=stdout > ngrok.log &
           sleep 3
 
       - name: Get ngrok public URL
         run: |
           echo "⏳ Waiting for ngrok tunnel..."
           for i in {1..15}; do
-            NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url // empty')
+            NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels | jq -r '.tunnels[0].public_url // empty')
             if [[ -n "$NGROK_URL" ]]; then
               echo "🔗 VNC Public URL: $NGROK_URL"
               break
