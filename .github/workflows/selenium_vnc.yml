@@ -14,7 +14,6 @@ jobs:
           sudo apt update
           sudo apt install -y xvfb x11vnc fluxbox xfce4 wget curl jq default-jre unzip
 
-          # Download Selenium JAR (fixed link)
           wget https://selenium-release.storage.googleapis.com/3.141/selenium-server-standalone-3.141.59.jar
 
       - name: Set up X, VNC, Selenium, and ngrok
@@ -22,6 +21,17 @@ jobs:
           # Start virtual display
           Xvfb :1 -screen 0 1024x768x16 &
           export DISPLAY=:1
+
+          # Wait for Xvfb to be ready
+          for i in {1..10}; do
+            if xdpyinfo -display :1 > /dev/null 2>&1; then
+              echo "✅ Xvfb is ready."
+              break
+            else
+              echo "⏳ Waiting for Xvfb to start..."
+              sleep 1
+            fi
+          done
 
           # Start window manager
           fluxbox &
@@ -35,13 +45,13 @@ jobs:
           # Start Selenium server
           java -jar selenium-server-standalone-3.141.59.jar -port 4444 &
 
-          # Set up and start ngrok
+          # Set up ngrok
           wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
           unzip ngrok-stable-linux-amd64.zip
           ./ngrok authtoken 1QzNVolV9VvSiUE7AlMnKlFkg1J_3VBimpCJrC4JHXLNwVvwd
           ./ngrok tcp 5900 > /dev/null &
 
-          # Give ngrok time to connect
+          # Wait for ngrok to spin up
           sleep 5
 
           # Print ngrok URL
