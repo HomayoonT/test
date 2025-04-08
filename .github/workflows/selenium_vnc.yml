@@ -12,51 +12,67 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y xvfb x11vnc fluxbox xfce4 wget curl jq default-jre unzip
+          sudo apt install -y xvfb x11vnc fluxbox wget curl jq default-jre unzip
 
+          # Download Selenium Standalone Server
           wget https://selenium-release.storage.googleapis.com/3.141/selenium-server-standalone-3.141.59.jar
 
-      - name: Set up X, VNC, Selenium, and ngrok
+      - name: Set up Xvfb, Fluxbox, VNC, and Selenium
         run: |
           # Start virtual display
           Xvfb :1 -screen 0 1024x768x16 &
           export DISPLAY=:1
-
-          # Wait for Xvfb to be ready
-          for i in {1..10}; do
-            if xdpyinfo -display :1 > /dev/null 2>&1; then
-              echo "✅ Xvfb is ready."
-              break
-            else
-              echo "⏳ Waiting for Xvfb to start..."
-              sleep 1
-            fi
-          done
+          echo "export DISPLAY=:1" >> $GITHUB_ENV
+          sleep 2
 
           # Start window manager
           fluxbox &
+          sleep 1
 
-          # Set VNC password
+          # Set up VNC password
           x11vnc -storepasswd secret /tmp/passwd
 
           # Start VNC server
-          x11vnc -forever -rfbauth /tmp/passwd -display :1 -shared -nopw -bg
+          x11vnc -forever -rfbauth /tmp/passwd -display :1 -shared -bg
+          sleep 1
 
           # Start Selenium server
           java -jar selenium-server-standalone-3.141.59.jar -port 4444 &
+          sleep 3
 
-          # Set up ngrok
+      - name: Set up and start ngrok
+        run: |
+          # Download and unzip ngrok
           wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
           unzip ngrok-stable-linux-amd64.zip
+
+          # Add ngrok auth token (REPLACE with your actual token)
           ./ngrok authtoken 1QzNVolV9VvSiUE7AlMnKlFkg1J_3VBimpCJrC4JHXLNwVvwd
-          ./ngrok tcp 5900 > /dev/null &
 
-          # Wait for ngrok to spin up
-          sleep 5
+          # Start ngrok in background and log output
+          ./ngrok tcp 5900 --log=stdout > ngrok.log &
+          sleep 3
 
-          # Print ngrok URL
-          echo "🔗 VNC Public URL:"
-          curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url'
+      - name: Get ngrok public URL
+        run: |
+          echo "⏳ Waiting for ngrok tunnel..."
+          for i in {1..15}; do
+            NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url // empty')
+            if [[ -n "$NGROK_URL" ]]; then
+              echo "🔗 VNC Public URL: $NGROK_URL"
+              break
+            else
+              echo "⌛ Still waiting..."
+              sleep 2
+            fi
+          done
 
-          # Keep container alive
+          if [[ -z "$NGROK_URL" ]]; then
+            echo "❌ ngrok tunnel failed. ngrok logs:"
+            cat ngrok.log
+          fi
+
+      - name: Keep job alive
+        run: |
+          echo "🔧 Session ready. Connect your VNC client to the ngrok URL above."
           tail -f /dev/null
