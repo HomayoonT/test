@@ -82,7 +82,8 @@ jobs:
       - name: Run test_selenium.py script
         run: |
           echo "🖥️ Running SeleniumBase test..."
-          DISPLAY=:1 python3 ./test_selenium.py
+          DISPLAY=:1 python3 ./test_selenium.py &
+          echo $! > selenium_pid.txt
 
       - name: Keep job alive
         run: |
