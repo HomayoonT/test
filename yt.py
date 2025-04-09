@@ -24,26 +24,39 @@ if GITHUB_ACTIONS_STATUS:
 else:
     VIDEO_URL_FILE = "video_url.txt"
 
-def get_driver():
+def get_driver(user_data_dir):
+    driver = Driver(uc=True, headless=False, incognito=False, user_data_dir=user_data_dir)
+    return driver
+
+def setup_driver():
+    driver = None
     is_new_profile = not os.path.exists(CHROME_PROFILE_PATH)
-    
-    cached_profile_path = os.path.abspath("chrome-profile")
-    temp_profile_path = tempfile.mkdtemp()
 
     if is_new_profile:
         print("🆕 New Chrome profile created.")
         os.makedirs(CHROME_PROFILE_PATH)  # Create profile directory if it doesn't exist
     else:
         print("✅ Chrome profile exists")
-        if os.path.exists(cached_profile_path):
-            shutil.copytree(cached_profile_path, temp_profile_path, dirs_exist_ok=True)
-        driver = Driver(uc=True, headless=True, incognito=False, user_data_dir=temp_profile_path)
-    
+        if GITHUB_ACTIONS_STATUS:
+            cached_profile_path = os.path.abspath("chrome-profile")
+            temp_profile_path = tempfile.mkdtemp()
+            if os.path.exists(cached_profile_path):
+                shutil.copytree(cached_profile_path, temp_profile_path, dirs_exist_ok=True)
+            driver = get_driver(user_data_dir=temp_profile_path)
+        else:
+            driver = get_driver(user_data_dir=CHROME_PROFILE_PATH)
 
-    if is_new_profile:
-        driver = Driver(uc=True, headless=True, incognito=False, user_data_dir=CHROME_PROFILE_PATH)
-        print("✅ Attempting to load cookies...")
+    if is_new_profile and not GITHUB_ACTIONS_STATUS:
+        driver = get_driver(user_data_dir=CHROME_PROFILE_PATH)
+        print("✅ Logging in Youtube...")
         load_cookies(driver)
+        driver.refresh()
+        time.sleep(10)
+        driver.quit()
+        driver = get_driver(user_data_dir=CHROME_PROFILE_PATH)
+    
+    if driver is None:
+        raise RuntimeError("Driver was not initialized correctly!")
 
     return driver
 
@@ -533,7 +546,7 @@ def watch_playlist(driver):
             print("⏩ Retrying next video...")
 
 if __name__ == "__main__":
-    driver = get_driver()
+    driver = setup_driver()
     login_youtube(driver)
 
     try:
