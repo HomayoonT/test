@@ -77,11 +77,16 @@ jobs:
             cat ngrok.log
           fi
 
-      - name: Download chrome_profile directory
-        uses: actions/download-artifact@v4
+      - name: Checkout temp-artifacts-branch
+        uses: actions/checkout@v4
         with:
-          name: chrome-profile
-          path: chrome_profile/
+          ref: temp-artifacts-branch
+
+      # Use the directory as needed
+
+      # - name: Cleanup branch (optional)
+      #   run: |
+      #     git push origin --delete temp-artifacts-branch
 
       - name: Confirm DISPLAY env
         run: echo $DISPLAY
