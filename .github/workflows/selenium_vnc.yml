@@ -96,8 +96,8 @@ jobs:
             sleep 10
           done
 
-      - name: Save chrome_profile cache
-        uses: actions/cache@v3
+      - name: Upload chrome_profile directory
+        uses: actions/upload-artifact@v3
         with:
-          path: chrome_profile
-          key: chrome-profile-default
+          name: chrome-profile
+          path: chrome_profile/

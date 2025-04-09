@@ -37,23 +37,17 @@ jobs:
         run: |
           touch youtube_cookies.json video_url.txt
 
-      - name: Restore chrome_profile and youtube_cookies.json
-        uses: actions/cache@v3
+      - name: Download chrome_profile directory
+        uses: actions/download-artifact@v3
         with:
-          path: |
-            chrome_profile
-            youtube_cookies.json
-          key: chrome-profile-default
-          restore-keys: |
-            chrome-profile-
+          name: chrome-profile
+          path: chrome_profile/
 
       - name: Run yt.py script
         run: python yt.py
 
-      - name: Save chrome_profile and youtube_cookies.json
-        uses: actions/cache@v3
+      - name: Upload chrome_profile directory
+        uses: actions/upload-artifact@v3
         with:
-          path: |
-            chrome_profile
-            youtube_cookies.json
-          key: chrome-profile-${{ github.run_id }}
+          name: chrome-profile
+          path: chrome_profile/

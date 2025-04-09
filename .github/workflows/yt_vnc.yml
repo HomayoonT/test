@@ -77,15 +77,11 @@ jobs:
             cat ngrok.log
           fi
 
-      - name: Restore chrome_profile and youtube_cookies.json
-        uses: actions/cache@v3
+      - name: Download chrome_profile directory
+        uses: actions/download-artifact@v3
         with:
-          path: |
-            chrome_profile
-            youtube_cookies.json
-          key: chrome-profile-default
-          restore-keys: |
-            chrome-profile-
+          name: chrome-profile
+          path: chrome_profile/
 
       - name: Confirm DISPLAY env
         run: echo $DISPLAY
