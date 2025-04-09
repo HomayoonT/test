@@ -43,7 +43,7 @@ jobs:
           path: |
             chrome_profile
             youtube_cookies.json
-          key: chrome-profile-14350489187
+          key: chrome-profile-${{ github.sha }}
           restore-keys: |
             chrome-profile-
 
