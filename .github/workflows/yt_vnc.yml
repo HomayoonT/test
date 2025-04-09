@@ -1,9 +1,6 @@
-name: Selenium VNC Debug with SeleniumBase (ngrok v3)
+name: YT VNC
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
@@ -80,13 +77,23 @@ jobs:
             cat ngrok.log
           fi
 
+      - name: Restore chrome_profile and youtube_cookies.json
+        uses: actions/cache@v3
+        with:
+          path: |
+            chrome_profile
+            youtube_cookies.json
+          key: chrome-profile-default
+          restore-keys: |
+            chrome-profile-
+
       - name: Confirm DISPLAY env
         run: echo $DISPLAY
 
       - name: Run test_selenium.py script
         run: |
-          echo "🖥️ Running SeleniumBase test..."
-          DISPLAY=:1 python3 ./test_selenium.py
+          echo "🖥️ Running YT script..."
+          DISPLAY=:1 python3 ./yt.py
 
       - name: Keep job alive (waiting for continue.txt)
         run: |
@@ -96,8 +103,8 @@ jobs:
             sleep 10
           done
 
-      - name: Save chrome_profile cache
-        uses: actions/cache@v3
-        with:
-          path: chrome_profile
-          key: chrome-profile-default
+      # - name: Save chrome_profile cache
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: chrome_profile
+      #     key: chrome-profile-${{ github.run_id }}

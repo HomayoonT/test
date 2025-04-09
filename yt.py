@@ -546,6 +546,7 @@ def watch_playlist(driver):
             print("⏩ Retrying next video...")
 
 if __name__ == "__main__":
+    time.sleep(60)
     driver = setup_driver()
     login_youtube(driver)
 
