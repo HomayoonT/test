@@ -38,7 +38,7 @@ jobs:
           touch youtube_cookies.json video_url.txt
 
       - name: Download chrome_profile directory
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: chrome-profile
           path: chrome_profile/
@@ -47,7 +47,7 @@ jobs:
         run: python yt.py
 
       - name: Upload chrome_profile directory
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: chrome-profile
           path: chrome_profile/
