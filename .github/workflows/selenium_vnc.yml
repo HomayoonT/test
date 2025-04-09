@@ -9,6 +9,10 @@ on:
 jobs:
   selenium_vnc:
     runs-on: ubuntu-latest
+    
+    env:
+      VIDEO_URL_FILE: ${{ secrets.VIDEO_URL_FILE }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2

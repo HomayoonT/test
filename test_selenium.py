@@ -12,5 +12,5 @@ if is_new_profile:
 driver = Driver(uc=True, headless=False, incognito=False, user_data_dir=CHROME_PROFILE_PATH)
 url = "https://www.browserscan.net/bot-detection"
 driver.uc_open(url)
-driver.sleep(5)
+driver.sleep(300)
 driver.quit()
