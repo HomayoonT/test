@@ -1,9 +1,6 @@
 name: Selenium VNC Debug with SeleniumBase (ngrok v3)
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
