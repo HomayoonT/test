@@ -41,11 +41,10 @@ def setup_driver():
     driver = get_driver(user_data_dir=CHROME_PROFILE_PATH)
 
     if is_new_profile:
-        driver = get_driver(user_data_dir=CHROME_PROFILE_PATH)
         print("✅ Logging in Youtube...")
         driver.uc_open("https://youtube.com")
         time.sleep(180)
-            
+
     if driver is None:
         raise RuntimeError("Driver was not initialized correctly!")
 
