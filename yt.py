@@ -45,10 +45,7 @@ def setup_driver():
         print("✅ Logging in Youtube...")
         driver.uc_open("https://youtube.com")
         time.sleep(180)
-        driver.quit()
-        time.sleep(5)
-        driver = get_driver(user_data_dir=CHROME_PROFILE_PATH)
-    
+            
     if driver is None:
         raise RuntimeError("Driver was not initialized correctly!")
 
