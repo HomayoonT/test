@@ -94,6 +94,7 @@ jobs:
 
   restore_yt_vnc_persistent:
     runs-on: ubuntu-latest
+    needs: yt_vnc_persistent
     
     env:
       VIDEO_URL_FILE: ${{ secrets.VIDEO_URL_FILE }}
