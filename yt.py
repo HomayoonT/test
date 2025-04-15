@@ -18,6 +18,7 @@ START_TIME = time.time()
 
 COOKIE_FILE = "youtube_cookies.json"
 CHROME_PROFILE_PATH = os.path.abspath("chrome_profile")
+EXTENSION_DIR = "adguard"
 
 if GITHUB_ACTIONS_STATUS:
     VIDEO_URL_FILE = os.environ.get('VIDEO_URL_FILE')
@@ -25,7 +26,7 @@ else:
     VIDEO_URL_FILE = "video_url.txt"
 
 def get_driver(user_data_dir):
-    driver = Driver(uc=True, headless=False, incognito=False, user_data_dir=user_data_dir)
+    driver = Driver(uc=True, headless=False, incognito=False, user_data_dir=user_data_dir, extension_dir=EXTENSION_DIR)
     return driver
 
 def setup_driver():
