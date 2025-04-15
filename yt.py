@@ -305,7 +305,7 @@ def click_on_sign_in(driver):
 def login_youtube(driver):
     """Logs into Youtube and saves authentication cookies."""
     driver.uc_open("https://youtube.com")
-    click_on_sign_in(driver)
+    # click_on_sign_in(driver)
     WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
 
     driver.get_screenshot_as_file("LoadedYTPageAfterClickOnSignIn.png")
@@ -471,27 +471,27 @@ def watch_playlist(driver):
                     ensure_video_playing(driver)
                     driver.get_screenshot_as_file("VideoIsPlaying.png")
                     # 🖱️ Occasionally move the mouse like a human
-                    if random.random() < 0.3:  # 30% chance
-                        print("🖱️ Moving mouse slightly...")
-                        move_mouse_randomly(driver)
-                        time.sleep(random.uniform(1, 3))
+                    # if random.random() < 0.3:  # 30% chance
+                    #     print("🖱️ Moving mouse slightly...")
+                    #     move_mouse_randomly(driver)
+                    #     time.sleep(random.uniform(1, 3))
 
-                    # 📜 Occasionally scroll slightly (20% chance)
-                    if random.random() < 0.2:
-                        print("📜 Scrolling randomly like a human...")
-                        scroll_like_human(driver)
-                        time.sleep(random.uniform(2, 5))
+                    # # 📜 Occasionally scroll slightly (5% chance)
+                    # if random.random() < 0.05:
+                    #     print("📜 Scrolling randomly like a human...")
+                    #     scroll_like_human(driver)
+                    #     time.sleep(random.uniform(2, 5))
 
-                    # ⏸️ Occasionally pause & resume (5% chance)
-                    if random.random() < 0.05:
+                    # ⏸️ Occasionally pause & resume (1% chance)
+                    if random.random() < 0.01:
                         print("⏸️ Pausing video briefly...")
                         pause_video_naturally(driver)
                         time.sleep(random.uniform(3, 8))  # User got distracted
                         print("▶️ Resuming video...")
                         ensure_video_playing(driver)
 
-                    # 🔊 Occasionally adjust volume (10% chance)
-                    if random.random() < 0.1:
+                    # 🔊 Occasionally adjust volume (1% chance)
+                    if random.random() < 0.01:
                         print("🔊 Adjusting volume slightly...")
                         adjust_volume_randomly(driver)
                         time.sleep(random.uniform(1, 2))
