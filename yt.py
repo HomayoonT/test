@@ -13,7 +13,7 @@ import requests
 GITHUB_ACTIONS_STATUS = True
 
 # Set timeout duration (in seconds)
-TIMEOUT = 30 # 330 minutes
+TIMEOUT = 330 * 60 # 330 minutes
 START_TIME = time.time()
 
 COOKIE_FILE = "youtube_cookies.json"
