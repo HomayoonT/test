@@ -517,7 +517,7 @@ def watch_playlist(driver):
 
                     exit_script(driver)
 
-                    if current_time >= video_duration:
+                    if current_time + 10 >= video_duration:
                         print(f"✅ Video {index + 1} has finished.")
                         break
 
