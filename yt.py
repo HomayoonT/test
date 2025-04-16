@@ -309,7 +309,7 @@ def login_youtube(driver):
     # click_on_sign_in(driver)
     WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
 
-    driver.get_screenshot_as_file("LoadedYTPageAfterClickOnSignIn.png")
+    # driver.get_screenshot_as_file("LoadedYTPageAfterClickOnSignIn.png")
     
     if not is_youtube_logged_in(driver):
         print("🔑 Please log in manually...")
@@ -427,7 +427,7 @@ def watch_playlist(driver):
             print(f"🎥 Playing video {index + 1}/{len(video_urls)}: {video_url}")
             driver.uc_open(video_url)
             wait_for_page_load(driver)
-            driver.get_screenshot_as_file("LoadedVideoURL.png")
+            # driver.get_screenshot_as_file("LoadedVideoURL.png")
             # Wait for video element to be present
             WebDriverWait(driver, 15).until(
                 EC.presence_of_element_located((By.TAG_NAME, "video"))
@@ -448,19 +448,19 @@ def watch_playlist(driver):
             stuck_attempts = 0
             while True:
                 try:
-                    # Check if an ad is playing
-                    if driver.execute_script(
-                        "return document.querySelector('.html5-video-player')?.classList.contains('ad-showing');"
-                    ):
-                        skip_button = driver.execute_script("return document.querySelector('.ytp-ad-skip-button')")
-                        if skip_button:
-                            driver.execute_script("document.querySelector('.ytp-ad-skip-button').click();")
-                            print("⏭️ Skip Ad button clicked!")
-                            time.sleep(1)
-                        else:
-                            print("⏳ Ad detected. Waiting for skip button or ad to finish...")
-                        time.sleep(1)
-                        continue
+                    # # Check if an ad is playing
+                    # if driver.execute_script(
+                    #     "return document.querySelector('.html5-video-player')?.classList.contains('ad-showing');"
+                    # ):
+                    #     skip_button = driver.execute_script("return document.querySelector('.ytp-ad-skip-button')")
+                    #     if skip_button:
+                    #         driver.execute_script("document.querySelector('.ytp-ad-skip-button').click();")
+                    #         print("⏭️ Skip Ad button clicked!")
+                    #         time.sleep(1)
+                    #     else:
+                    #         print("⏳ Ad detected. Waiting for skip button or ad to finish...")
+                    #     time.sleep(1)
+                    #     continue
 
                     # Ensure the video element is still there and attempt to play
                     WebDriverWait(driver, 10).until(
@@ -470,7 +470,7 @@ def watch_playlist(driver):
 
                     # Make sure the video is not paused
                     ensure_video_playing(driver)
-                    driver.get_screenshot_as_file("VideoIsPlaying.png")
+                    # driver.get_screenshot_as_file("VideoIsPlaying.png")
                     # 🖱️ Occasionally move the mouse like a human
                     # if random.random() < 0.3:  # 30% chance
                     #     print("🖱️ Moving mouse slightly...")
@@ -528,7 +528,10 @@ def watch_playlist(driver):
                     time.sleep(5)
                 except Exception as e:
                     print(f"⚠️ Error during video playback monitoring: {e}")
-                    break
+                    driver.quit()
+                    time.sleep(10)
+                    driver = setup_driver()
+                    driver.uc_open(video_url)
 
             print("➡️ Moving to the next video in the playlist...")
 
