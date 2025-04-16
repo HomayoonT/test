@@ -85,10 +85,10 @@ jobs:
           echo "🖥️ Running YT script..."
           DISPLAY=:1 python3 ./yt.py
 
-      - name: Keep job alive (waiting for continue.txt)
+      - name: Keep job alive for 8 minutes
         run: |
-          echo "Sleep for 5.5 hours"
-          sleep 19800
+          echo "Sleep for 8 minutes"
+          sleep 480
 
       - name: Upload Google Chrome profile
         uses: actions/upload-artifact@v4
