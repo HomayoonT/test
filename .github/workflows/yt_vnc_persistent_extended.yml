@@ -89,10 +89,10 @@ jobs:
       #     name: chrome-profile
       #     path: chrome_profile/
       #   continue-on-error: true
-
+      
       - name: Trigger next workflow run (recursive call)
         run: |
           echo "Triggering the next run via GitHub API..."
           curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-               https://api.github.com/repos/${{ github.repository }}/actions/workflows/$(basename $GITHUB_WORKFLOW_REF)/dispatches \
+               https://api.github.com/repos/${{ github.repository }}/actions/workflows/yt_vnc_persistent_extended.yml/dispatches \
                -d '{"ref":"${{ github.ref_name }}"}'
