@@ -1,4 +1,4 @@
-name: YT VNC Persistent
+name: YT VNC Persistent Extended
 
 on:
   workflow_dispatch:
