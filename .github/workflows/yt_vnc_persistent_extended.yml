@@ -10,6 +10,7 @@ jobs:
     env:
       VIDEO_URL_FILE: ${{ secrets.VIDEO_URL_FILE }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GOOGLE_ACCOUNT: ${{ secrets.GOOGLE_ACCOUNT }}
 
     steps:
       - name: Checkout repository
@@ -21,12 +22,48 @@ jobs:
           sudo apt install -y xvfb x11vnc wget curl jq unzip python3-pip xfce4 xfce4-goodies
           pip3 install seleniumbase
 
-      - name: Download Google Chrome profile
-        uses: actions/download-artifact@v4
-        with:
-          name: chrome-profile
-          path: chrome_profile/
-        continue-on-error: true
+      - name: Fetch Dropbox access token using refresh token
+        id: get_dropbox_token
+        env:
+          DROPBOX_REFRESH_TOKEN: ${{ secrets.DROPBOX_REFRESH_TOKEN }}
+          DROPBOX_CLIENT_ID: ${{ secrets.DROPBOX_CLIENT_ID }}
+          DROPBOX_CLIENT_SECRET: ${{ secrets.DROPBOX_CLIENT_SECRET }}
+        run: |
+          response=$(curl -s -X POST https://api.dropbox.com/oauth2/token \
+            -d grant_type=refresh_token \
+            -d refresh_token=$DROPBOX_REFRESH_TOKEN \
+            -d client_id=$DROPBOX_CLIENT_ID \
+            -d client_secret=$DROPBOX_CLIENT_SECRET)
+
+          access_token=$(echo $response | jq -r .access_token)
+
+          if [ "$access_token" == "null" ] || [ -z "$access_token" ]; then
+            echo "Failed to get access token"
+            echo "$response"
+            exit 1
+          fi
+
+          echo "DROPBOX_ACCESS_TOKEN=$access_token" >> $GITHUB_ENV
+
+      - name: Download chrome_profile archive from Dropbox
+        env:
+          GOOGLE_ACCOUNT: ${{ secrets.GOOGLE_ACCOUNT }}
+        run: |
+          curl -X POST https://content.dropboxapi.com/2/files/download \
+            --header "Authorization: Bearer $DROPBOX_ACCESS_TOKEN" \
+            --header "Dropbox-API-Arg: {\"path\": \"/chrome_profile_${GOOGLE_ACCOUNT}.tar.gz\"}" \
+            --output chrome_profile_${GOOGLE_ACCOUNT}.tar.gz
+
+      - name: Extract chrome_profile archive
+        env:
+          GOOGLE_ACCOUNT: ${{ secrets.GOOGLE_ACCOUNT }}
+        run: |
+          tar -xzf chrome_profile_${GOOGLE_ACCOUNT}.tar.gz
+
+      - name: List contents
+        run: |
+          echo "Contents of chrome_profile:"
+          ls -la chrome_profile
 
       - name: Set up Xvfb, Xfce, VNC, and Selenium
         run: |
@@ -73,23 +110,30 @@ jobs:
       - name: Confirm DISPLAY env
         run: echo $DISPLAY
 
-      # - name: Run YT script
-      #   run: |
-      #     echo "🖥️ Running YT script..."
-      #     DISPLAY=:1 python3 ./yt.py
+      - name: Run YT script
+        run: |
+          echo "🖥️ Running YT script..."
+          DISPLAY=:1 python3 ./yt.py
 
       # - name: Keep job alive for 8 minutes
       #   run: |
       #     echo "Sleep for 8 minutes"
       #     sleep 480
 
-      # - name: Upload Google Chrome profile
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: chrome-profile
-      #     path: chrome_profile/
-      #   continue-on-error: true
-      
+      - name: Archive chrome_profile directory (tar)
+        run: |
+          tar -czf chrome_profile_${GOOGLE_ACCOUNT}.tar.gz chrome_profile
+
+      - name: Upload chrome_profile archive to Dropbox
+        env:
+          GOOGLE_ACCOUNT: ${{ secrets.GOOGLE_ACCOUNT }}
+        run: |
+          curl -X POST https://content.dropboxapi.com/2/files/upload \
+            --header "Authorization: Bearer $DROPBOX_ACCESS_TOKEN" \
+            --header "Dropbox-API-Arg: {\"path\": \"/chrome_profile_${GOOGLE_ACCOUNT}.tar.gz\",\"mode\": \"overwrite\"}" \
+            --header "Content-Type: application/octet-stream" \
+            --data-binary @chrome_profile_${GOOGLE_ACCOUNT}.tar.gz
+
       - name: Trigger next workflow run (recursive call)
         run: |
           echo "Triggering the next run via GitHub API..."
