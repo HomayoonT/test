@@ -33,13 +33,6 @@ jobs:
             --header "Content-Type: application/octet-stream" \
             --data-binary @chrome_profile.tar.gz
 
-  download_profile:
-    if: ${{ github.event_name == 'workflow_run' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Download chrome_profile.tar.gz from Dropbox
         env:
           DROPBOX_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
