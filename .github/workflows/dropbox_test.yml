@@ -33,12 +33,6 @@ jobs:
             --header "Content-Type: application/octet-stream" \
             --data-binary @chrome_profile.tar.gz
 
-      - name: Trigger next workflow run
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: "Chrome Profile Sync"
-          token: ${{ secrets.GITHUB_TOKEN }}
-
   download_profile:
     if: ${{ github.event_name == 'workflow_run' }}
     runs-on: ubuntu-latest
