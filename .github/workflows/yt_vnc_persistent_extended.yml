@@ -53,17 +53,20 @@ jobs:
             --header "Authorization: Bearer $DROPBOX_ACCESS_TOKEN" \
             --header "Dropbox-API-Arg: {\"path\": \"/chrome_profile_${GOOGLE_ACCOUNT}.tar.gz\"}" \
             --output chrome_profile_${GOOGLE_ACCOUNT}.tar.gz
+        continue-on-error: true
 
       - name: Extract chrome_profile archive
         env:
           GOOGLE_ACCOUNT: ${{ secrets.GOOGLE_ACCOUNT }}
         run: |
           tar -xzf chrome_profile_${GOOGLE_ACCOUNT}.tar.gz
+        continue-on-error: true
 
       - name: List contents
         run: |
           echo "Contents of chrome_profile:"
           ls -la chrome_profile
+        continue-on-error: true
 
       - name: Set up Xvfb, Xfce, VNC, and Selenium
         run: |
