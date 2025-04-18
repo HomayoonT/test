@@ -1,0 +1,65 @@
+name: Chrome Profile Sync Dropbox
+
+on:
+  workflow_dispatch:  # manual trigger
+  workflow_run:
+    workflows: ["Chrome Profile Sync"]
+    types:
+      - completed
+
+jobs:
+  sync_profile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create chrome_profile and hello.txt
+        run: |
+          mkdir -p chrome_profile
+          echo "Hello from $(date)" > chrome_profile/hello.txt
+
+      - name: Archive chrome_profile directory (tar)
+        run: |
+          tar -czf chrome_profile.tar.gz chrome_profile
+
+      - name: Upload chrome_profile.tar.gz to Dropbox
+        env:
+          DROPBOX_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
+        run: |
+          curl -X POST https://content.dropboxapi.com/2/files/upload \
+            --header "Authorization: Bearer $DROPBOX_TOKEN" \
+            --header "Dropbox-API-Arg: {\"path\": \"/chrome_profile.tar.gz\",\"mode\": \"overwrite\"}" \
+            --header "Content-Type: application/octet-stream" \
+            --data-binary @chrome_profile.tar.gz
+
+      - name: Trigger next workflow run
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: "Chrome Profile Sync"
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  download_profile:
+    if: ${{ github.event_name == 'workflow_run' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download chrome_profile.tar.gz from Dropbox
+        env:
+          DROPBOX_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
+        run: |
+          curl -X POST https://content.dropboxapi.com/2/files/download \
+            --header "Authorization: Bearer $DROPBOX_TOKEN" \
+            --header "Dropbox-API-Arg: {\"path\": \"/chrome_profile.tar.gz\"}" \
+            --output chrome_profile.tar.gz
+
+      - name: Extract chrome_profile archive
+        run: |
+          tar -xzf chrome_profile.tar.gz
+
+      - name: List contents
+        run: |
+          echo "Contents of chrome_profile:"
+          ls -la chrome_profile
