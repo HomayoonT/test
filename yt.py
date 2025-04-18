@@ -306,6 +306,7 @@ def click_on_sign_in(driver):
 def login_youtube(driver):
     """Logs into Youtube and saves authentication cookies."""
     driver.uc_open("https://youtube.com")
+    time.sleep(180)
     # click_on_sign_in(driver)
     WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
 
