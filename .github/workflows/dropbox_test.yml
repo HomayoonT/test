@@ -1,7 +1,7 @@
 name: Chrome Profile Sync Dropbox
 
 on:
-  workflow_dispatch:  # manual trigger
+  workflow_dispatch:
   workflow_run:
     workflows: ["Chrome Profile Sync"]
     types:
@@ -10,6 +10,8 @@ on:
 jobs:
   sync_profile:
     runs-on: ubuntu-latest
+    env:
+      GOOGLE_ACCOUNT: ${{ secrets.GOOGLE_ACCOUNT }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,30 +23,34 @@ jobs:
 
       - name: Archive chrome_profile directory (tar)
         run: |
-          tar -czf chrome_profile.tar.gz chrome_profile
+          tar -czf chrome_profile_${GOOGLE_ACCOUNT}.tar.gz chrome_profile
 
-      - name: Upload chrome_profile.tar.gz to Dropbox
+      - name: Upload chrome_profile archive to Dropbox
         env:
           DROPBOX_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
+          GOOGLE_ACCOUNT: ${{ secrets.GOOGLE_ACCOUNT }}
         run: |
           curl -X POST https://content.dropboxapi.com/2/files/upload \
             --header "Authorization: Bearer $DROPBOX_TOKEN" \
-            --header "Dropbox-API-Arg: {\"path\": \"/chrome_profile.tar.gz\",\"mode\": \"overwrite\"}" \
+            --header "Dropbox-API-Arg: {\"path\": \"/chrome_profile_${GOOGLE_ACCOUNT}.tar.gz\",\"mode\": \"overwrite\"}" \
             --header "Content-Type: application/octet-stream" \
-            --data-binary @chrome_profile.tar.gz
+            --data-binary @chrome_profile_${GOOGLE_ACCOUNT}.tar.gz
 
-      - name: Download chrome_profile.tar.gz from Dropbox
+      - name: Download chrome_profile archive from Dropbox
         env:
           DROPBOX_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
+          GOOGLE_ACCOUNT: ${{ secrets.GOOGLE_ACCOUNT }}
         run: |
           curl -X POST https://content.dropboxapi.com/2/files/download \
             --header "Authorization: Bearer $DROPBOX_TOKEN" \
-            --header "Dropbox-API-Arg: {\"path\": \"/chrome_profile.tar.gz\"}" \
-            --output chrome_profile.tar.gz
+            --header "Dropbox-API-Arg: {\"path\": \"/chrome_profile_${GOOGLE_ACCOUNT}.tar.gz\"}" \
+            --output chrome_profile_${GOOGLE_ACCOUNT}.tar.gz
 
       - name: Extract chrome_profile archive
+        env:
+          GOOGLE_ACCOUNT: ${{ secrets.GOOGLE_ACCOUNT }}
         run: |
-          tar -xzf chrome_profile.tar.gz
+          tar -xzf chrome_profile_${GOOGLE_ACCOUNT}.tar.gz
 
       - name: List contents
         run: |
