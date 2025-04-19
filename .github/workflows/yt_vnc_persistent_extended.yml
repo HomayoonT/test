@@ -55,11 +55,14 @@ jobs:
             --output chrome_profile_${GOOGLE_ACCOUNT}.tar.gz
         continue-on-error: true
 
-      - name: Extract chrome_profile archive
+      - name: Extract chrome_profile archive and fix permissions
         env:
           GOOGLE_ACCOUNT: ${{ secrets.GOOGLE_ACCOUNT }}
         run: |
           tar -xzf chrome_profile_${GOOGLE_ACCOUNT}.tar.gz
+          sudo chown -R $USER:$USER chrome_profile
+          chmod -R u+rwX chrome_profile
+          find chrome_profile -type f \( -name 'SingletonLock' -o -name 'SingletonCookie' -o -name 'SingletonSocket' -o -name 'DevToolsActivePort' \) -delete
         continue-on-error: true
 
       - name: List contents
