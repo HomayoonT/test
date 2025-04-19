@@ -38,10 +38,12 @@ def setup_driver():
         os.makedirs(CHROME_PROFILE_PATH)  # Create profile directory if it doesn't exist
     else:
         print("✅ Chrome profile exists")
+        driver = Driver(uc=True, headless=False, incognito=False, user_data_dir=CHROME_PROFILE_PATH)
 
-    driver = get_driver(user_data_dir=CHROME_PROFILE_PATH)
+    # driver = get_driver(user_data_dir=CHROME_PROFILE_PATH)
 
     if is_new_profile:
+        driver = get_driver(user_data_dir=CHROME_PROFILE_PATH)
         print("✅ Logging in Youtube...")
         driver.uc_open("https://youtube.com")
         time.sleep(180)
