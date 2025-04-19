@@ -62,8 +62,8 @@ jobs:
           # Extract archive
           tar -xzf chrome_profile_${GOOGLE_ACCOUNT}.tar.gz
 
-          # Delete Chrome lock files if they exist
-          find chrome_profile -type f \( -name 'SingletonLock' -o -name 'SingletonCookie' -o -name 'SingletonSocket' -o -name 'DevToolsActivePort' \) -exec rm -f {} +
+          # Remove any Singleton symlinks or Dangling symlinks
+          find chrome_profile -type l \( -name 'SingletonLock' -o -name 'SingletonCookie' -o -name 'SingletonSocket' \) -exec rm -f {} +
 
           # Set appropriate permissions (read/write/execute for runner user)
           chmod -R u+rwX chrome_profile
